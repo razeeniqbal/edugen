@@ -248,7 +248,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
           <h3 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center gap-2">
             ⭐ Almost There - Push for Excellence
           </h3>
-          <p className="text-sm text-gray-600 mb-4">You're doing well! Practice more to achieve mastery</p>
+          <p className="text-sm text-gray-600 mb-4">You&apos;re doing well! Practice more to achieve mastery</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {topicsToMaster.map((subject, idx) => {
               const colors = getColorClasses(subject.color)
@@ -301,7 +301,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
           <h3 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center gap-2">
             🏆 Strong Areas - Keep It Up!
           </h3>
-          <p className="text-sm text-gray-600 mb-4">You're excelling in these subjects!</p>
+          <p className="text-sm text-gray-600 mb-4">You&apos;re excelling in these subjects!</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {strongSubjects.filter(s => s.averageScore >= 85).map((subject, idx) => {
               const colors = getColorClasses(subject.color)
