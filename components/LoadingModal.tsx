@@ -45,7 +45,3 @@ export default function LoadingModal({ isOpen, message = 'Loading...' }: Loading
   )
 }
 
-
-
-
-

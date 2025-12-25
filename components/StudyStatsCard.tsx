@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { QuizResult } from '@/lib/types'
 
 interface StudyStats {
   totalQuizzes: number
@@ -138,25 +139,24 @@ export default function StudyStatsCard({ stats }: StudyStatsCardProps) {
 }
 
 // Helper function to calculate stats from quiz results
-export function calculateStudyStats(quizResults: any[]): StudyStats {
+export function calculateStudyStats(quizResults: QuizResult[]): StudyStats {
   const totalQuizzes = quizResults.length
 
   // Handle both old and new data formats
   const totalQuestions = quizResults.reduce((sum, r) => {
-    return sum + (r.totalQuestions || r.total || 0)
+    return sum + (r.totalQuestions || 0)
   }, 0)
 
   const averageScore = totalQuizzes > 0
     ? Math.round(quizResults.reduce((sum, r) => {
         // New format uses 'score' (already a percentage)
-        // Old format uses 'percentage'
-        return sum + (r.score ?? r.percentage ?? 0)
+        return sum + (r.score || 0)
       }, 0) / totalQuizzes)
     : 0
 
   // Calculate study streak
   const sortedDates = quizResults
-    .map(r => new Date(r.timestamp || r.date))
+    .map(r => new Date(r.timestamp))
     .filter(date => !isNaN(date.getTime()))
     .sort((a, b) => b.getTime() - a.getTime())
 
@@ -184,14 +184,14 @@ export function calculateStudyStats(quizResults: any[]): StudyStats {
     // New format: chapters is an array or number, old format: chapter is string
     const chapterKey = Array.isArray(result.chapters)
       ? `${result.chapters.length} chapter${result.chapters.length > 1 ? 's' : ''}`
-      : result.chapter || result.subject || 'Unknown'
+      : result.subject || 'Unknown'
 
     if (!chapterPerformance[chapterKey]) {
       chapterPerformance[chapterKey] = { total: 0, correct: 0 }
     }
 
-    const total = result.totalQuestions || result.total || 0
-    const correct = result.correctAnswers ?? (result.score && result.total ? Math.round((result.score / 100) * result.total) : 0)
+    const total = result.totalQuestions || 0
+    const correct = result.correctAnswers ?? (result.score && result.totalQuestions ? Math.round((result.score / 100) * result.totalQuestions) : 0)
 
     chapterPerformance[chapterKey].total += total
     chapterPerformance[chapterKey].correct += correct
@@ -225,9 +225,5 @@ export function calculateStudyStats(quizResults: any[]): StudyStats {
     weekChapters
   }
 }
-
-
-
-
 
 

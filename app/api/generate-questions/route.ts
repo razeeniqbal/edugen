@@ -5,6 +5,7 @@ import { getChapterContent } from '@/lib/sejarah-chapters-content'
 import { spm2020Questions, getQuestionsByChapter, getRandomQuestions } from '@/lib/spm-past-year-2020'
 import { getSubject, getSubjectTopicsByForm } from '@/lib/subjects-config'
 import { getSubjectSyllabusPrompt } from '@/lib/multi-subject-syllabus'
+import { Question, SyllabusTopic, ChapterData, GeminiResponse } from '@/lib/types'
 
 // Initialize Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
@@ -56,7 +57,7 @@ ${syllabusContext.focusAreas.map(area => `- ${area}`).join('\n')}
 
       if (sejarahSyllabus.topics) {
         syllabusInfo += `SYLLABUS TOPICS:\n`
-        sejarahSyllabus.topics.forEach((topic: any) => {
+        sejarahSyllabus.topics.forEach((topic: SyllabusTopic) => {
           syllabusInfo += `\n${topic.chapter}:\n`
           topic.topics.forEach((t: string) => syllabusInfo += `  - ${t}\n`)
         })
@@ -64,13 +65,13 @@ ${syllabusContext.focusAreas.map(area => `- ${area}`).join('\n')}
 
       if (sejarahSyllabus.form4Topics && sejarahSyllabus.form5Topics) {
         syllabusInfo += `\nFORM 4 TOPICS:\n`
-        sejarahSyllabus.form4Topics.forEach((topic: any) => {
+        sejarahSyllabus.form4Topics.forEach((topic: SyllabusTopic) => {
           syllabusInfo += `\n${topic.chapter}:\n`
           topic.topics.forEach((t: string) => syllabusInfo += `  - ${t}\n`)
         })
 
         syllabusInfo += `\nFORM 5 TOPICS:\n`
-        sejarahSyllabus.form5Topics.forEach((topic: any) => {
+        sejarahSyllabus.form5Topics.forEach((topic: SyllabusTopic) => {
           syllabusInfo += `\n${topic.chapter}:\n`
           topic.topics.forEach((t: string) => syllabusInfo += `  - ${t}\n`)
         })
@@ -105,9 +106,9 @@ ${syllabusContext.focusAreas.map(area => `- ${area}`).join('\n')}
   // Multi-subject chapter handling
   if (selectedChapters && selectedChapters.length > 0 && subjectData) {
     isObjectiveMode = true
-    const chaptersData = selectedChapters.map(chapterId => {
-      return subjectData.topics.find(t => t.chapter === chapterId)
-    }).filter(Boolean)
+    const chaptersData = selectedChapters
+      .map(chapterId => subjectData.topics.find(t => t.chapter === chapterId))
+      .filter((ch): ch is NonNullable<typeof ch> => ch !== undefined)
 
     if (chaptersData.length > 0) {
       // Add randomization seed based on timestamp
@@ -132,13 +133,13 @@ FORM: ${form || 4}
 GENERATION SEED: ${randomSeed}
 
 SELECTED CHAPTERS:
-${chaptersData.map((ch: any) => `- ${ch.chapter.toUpperCase()}: ${ch.title}`).join('\n')}
+${chaptersData.map((ch) => `- ${ch.chapter.toUpperCase()}: ${ch.title}`).join('\n')}
 
 KEY TOPICS TO COVER:
-${chaptersData.flatMap((ch: any) => ch.keyTopics || []).map((topic: string) => `- ${topic}`).join('\n')}
+${chaptersData.flatMap((ch) => ch.keyTopics || []).map((topic: string) => `- ${topic}`).join('\n')}
 
-${chaptersData.some((ch: any) => ch.keyTerms) ? `IMPORTANT TERMS:
-${chaptersData.flatMap((ch: any) => ch.keyTerms || []).join(', ')}` : ''}
+${chaptersData.some((ch) => ch.keyTerms) ? `IMPORTANT TERMS:
+${chaptersData.flatMap((ch) => ch.keyTerms || []).join(', ')}` : ''}
 
 SPECIAL INSTRUCTIONS FOR OBJECTIVE QUESTIONS:
 - YOU MUST Generate EXACTLY 40 objective questions - NO MORE, NO LESS
@@ -321,24 +322,17 @@ Make sure the questions are diverse, covering different aspects and difficulty l
     const response = await result.response
     const responseText = response.text()
 
-    console.log('AI Response length:', responseText.length)
-    console.log('AI Response preview:', responseText.substring(0, 500))
-
     // Try multiple parsing strategies
-    let questions: any[] = []
+    let questions: Question[] = []
 
     // Strategy 1: Direct JSON parse
     try {
       questions = JSON.parse(responseText)
       if (Array.isArray(questions)) {
-        console.log(`Parsed ${questions.length} questions via direct parse`)
-        if (isObjectiveMode && questions.length < 40) {
-          console.warn(`Only ${questions.length} questions generated, expected 40`)
-        }
         return questions
       }
     } catch (e) {
-      console.log('Direct parse failed, trying pattern matching...')
+      // Direct parse failed, continue to pattern matching
     }
 
     // Strategy 2: Extract JSON array from text
@@ -347,14 +341,10 @@ Make sure the questions are diverse, covering different aspects and difficulty l
       try {
         questions = JSON.parse(jsonMatch[0])
         if (Array.isArray(questions)) {
-          console.log(`Parsed ${questions.length} questions via pattern matching`)
-          if (isObjectiveMode && questions.length < 40) {
-            console.warn(`Only ${questions.length} questions generated, expected 40`)
-          }
           return questions
         }
       } catch (e) {
-        console.log('Pattern match parse failed:', e)
+        // Pattern match failed, continue to code block
       }
     }
 
@@ -364,21 +354,15 @@ Make sure the questions are diverse, covering different aspects and difficulty l
       try {
         questions = JSON.parse(codeBlockMatch[1])
         if (Array.isArray(questions)) {
-          console.log(`Parsed ${questions.length} questions via code block`)
-          if (isObjectiveMode && questions.length < 40) {
-            console.warn(`Only ${questions.length} questions generated, expected 40`)
-          }
           return questions
         }
       } catch (e) {
-        console.log('Code block parse failed:', e)
+        // Code block parse failed
       }
     }
 
-    console.error('Full response text:', responseText)
-    throw new Error('Failed to parse questions from AI response. Check logs for details.')
+    throw new Error('Failed to parse questions from AI response')
   } catch (error) {
-    console.error('Error calling Gemini API:', error)
     throw error
   }
 }
@@ -429,13 +413,13 @@ export async function POST(request: NextRequest) {
     // Check if user wants to use SPM 2020 past year questions
     const usePastYear = body.usePastYear === true
 
-    let questions: any[] = []
-    let chapterData: any = null
+    let questions: Question[] = []
+    let chapterData: ChapterData | null = null
 
     // Past year questions only for Sejarah for now
     if (usePastYear && (subject === 'sejarah' || subject === 'history') && isSPMMode && chaptersToProcess.length > 0) {
       // Use SPM 2020 past year questions for multiple chapters
-      const allPastYearQuestions: any[] = []
+      const allPastYearQuestions: Question[] = []
 
       for (const chapterId of chaptersToProcess) {
         const chapterInfo = getChapterContent(chapterId)
@@ -480,11 +464,10 @@ export async function POST(request: NextRequest) {
       try {
         // Generate questions with all chapters at once for better coherence
         if (chaptersToProcess.length > 0) {
-          console.log(`Generating questions for ${chaptersToProcess.length} chapter(s): ${chaptersToProcess.join(', ')}`)
           questions = await generateQuestions(subject, text, educationLevel, undefined, chaptersToProcess, form)
 
           if (chaptersToProcess.length === 1) {
-            chapterData = getSubject(subject)?.topics.find(t => t.chapter === chaptersToProcess[0])
+            chapterData = getSubject(subject)?.topics.find(t => t.chapter === chaptersToProcess[0]) || null
             if (!chapterData && (subject === 'sejarah' || subject === 'history')) {
               chapterData = getChapterContent(chaptersToProcess[0])
             }
@@ -493,12 +476,9 @@ export async function POST(request: NextRequest) {
           // No chapters - generate from text
           questions = await generateQuestions(subject, text, educationLevel)
         }
-      } catch (aiError: any) {
-        console.error('AI generation failed:', aiError)
-
+      } catch (aiError) {
         // Fallback: Try to use any available past year questions (only for Sejarah)
         if ((subject === 'sejarah' || subject === 'history') && isSPMMode && chaptersToProcess.length > 0) {
-          console.log('Attempting fallback to past year questions...')
           const fallbackQuestions = getRandomQuestions(40)
           if (fallbackQuestions.length > 0) {
             questions = fallbackQuestions.map((q, index) => ({
@@ -509,21 +489,21 @@ export async function POST(request: NextRequest) {
               explanation: q.explanation,
               difficulty: q.difficulty,
             }))
-            console.log('Using fallback past year questions')
           }
         }
 
         // If still no questions, throw error
         if (questions.length === 0) {
+          const errorMessage = aiError instanceof Error ? aiError.message : 'Unknown error'
           return NextResponse.json(
-            { error: `Failed to generate questions: ${aiError.message || 'Unknown error'}` },
+            { error: `Failed to generate questions: ${errorMessage}` },
             { status: 500 }
           )
         }
       }
     }
 
-    const response: any = {
+    const response: GeminiResponse = {
       questions,
       subject,
       educationLevel,
@@ -544,8 +524,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error generating questions:', error)
-
     // Provide more specific error messages
     if (error instanceof Error) {
       return NextResponse.json(

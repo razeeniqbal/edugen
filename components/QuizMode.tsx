@@ -1,20 +1,7 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-
-interface Question {
-  number?: number
-  question: string
-  options?: {
-    A: string
-    B: string
-    C: string
-    D: string
-  }
-  correctAnswer?: string
-  explanation?: string
-  difficulty?: string
-}
+import { useState, useRef, useEffect } from 'react'
+import { Question } from '@/lib/types'
 
 interface QuizModeProps {
   questions: Question[]

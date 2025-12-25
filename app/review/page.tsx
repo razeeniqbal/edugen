@@ -2,20 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-interface Question {
-  number?: number
-  question: string
-  options?: {
-    A: string
-    B: string
-    C: string
-    D: string
-  }
-  correctAnswer?: string
-  explanation?: string
-  difficulty?: string
-}
+import { Question } from '@/lib/types'
+import { getSubjectIcon } from '@/lib/subject-utils'
 
 interface QuizResult {
   subject: string
@@ -71,13 +59,7 @@ export default function ReviewPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 bg-${quizResult.color}-500 rounded-xl flex items-center justify-center text-3xl shadow-md`}>
-                {quizResult.subjectId === 'mathematics' && '📐'}
-                {quizResult.subjectId === 'addMath' && '🧮'}
-                {quizResult.subjectId === 'physics' && '⚛️'}
-                {quizResult.subjectId === 'chemistry' && '🧪'}
-                {quizResult.subjectId === 'biology' && '🧬'}
-                {quizResult.subjectId === 'islam' && '☪️'}
-                {quizResult.subjectId === 'sejarah' && '📜'}
+                {getSubjectIcon(quizResult.subjectId)}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">Quiz Review - {quizResult.subjectBM}</h1>

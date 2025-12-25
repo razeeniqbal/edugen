@@ -2,19 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-
-interface QuizResult {
-  subject: string
-  subjectId: string
-  subjectBM: string
-  form: number
-  chapters: number
-  score: number
-  correctAnswers: number
-  totalQuestions: number
-  timestamp: string
-  color: string
-}
+import { getSubjectIcon } from '@/lib/subject-utils'
+import { QuizResult } from '@/lib/types'
 
 interface SubjectPerformance {
   subjectId: string
@@ -48,14 +37,14 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
   const subjectPerformance: Record<string, SubjectPerformance> = {}
 
   quizResults.forEach((result) => {
-    const key = result.subjectId
+    const key = result.subjectId || result.subject
 
     if (!subjectPerformance[key]) {
       subjectPerformance[key] = {
-        subjectId: result.subjectId,
+        subjectId: result.subjectId || result.subject,
         subject: result.subject,
-        subjectBM: result.subjectBM,
-        color: result.color,
+        subjectBM: result.subjectBM || result.subject,
+        color: result.color || 'primary',
         totalQuizzes: 0,
         averageScore: 0,
         totalQuestions: 0,
@@ -70,7 +59,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
     const perf = subjectPerformance[key]
     perf.totalQuizzes++
     perf.totalQuestions += result.totalQuestions
-    perf.correctAnswers += result.correctAnswers
+    perf.correctAnswers += result.correctAnswers || 0
 
     // Track form-specific scores
     if (result.form === 4) {
@@ -115,7 +104,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
   const overallStats = {
     totalQuizzes: quizResults.length,
     totalQuestions: quizResults.reduce((sum, r) => sum + r.totalQuestions, 0),
-    totalCorrect: quizResults.reduce((sum, r) => sum + r.correctAnswers, 0),
+    totalCorrect: quizResults.reduce((sum, r) => sum + (r.correctAnswers || 0), 0),
     averageScore: quizResults.length > 0
       ? Math.round(quizResults.reduce((sum, r) => sum + r.score, 0) / quizResults.length)
       : 0,
@@ -200,13 +189,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="text-2xl">
-                        {subject.subjectId === 'mathematics' && '📐'}
-                        {subject.subjectId === 'addMath' && '🧮'}
-                        {subject.subjectId === 'physics' && '⚛️'}
-                        {subject.subjectId === 'chemistry' && '🧪'}
-                        {subject.subjectId === 'biology' && '🧬'}
-                        {subject.subjectId === 'islam' && '☪️'}
-                        {subject.subjectId === 'sejarah' && '📜'}
+                        {getSubjectIcon(subject.subjectId)}
                       </div>
                       <div>
                         <h4 className={`font-semibold ${colors.text}`}>{subject.subjectBM}</h4>
@@ -279,13 +262,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div className="text-xl">
-                      {subject.subjectId === 'mathematics' && '📐'}
-                      {subject.subjectId === 'addMath' && '🧮'}
-                      {subject.subjectId === 'physics' && '⚛️'}
-                      {subject.subjectId === 'chemistry' && '🧪'}
-                      {subject.subjectId === 'biology' && '🧬'}
-                      {subject.subjectId === 'islam' && '☪️'}
-                      {subject.subjectId === 'sejarah' && '📜'}
+                      {getSubjectIcon(subject.subjectId)}
                     </div>
                     <div className="flex-1">
                       <h4 className={`font-semibold text-sm ${colors.text}`}>{subject.subjectBM}</h4>
@@ -337,13 +314,7 @@ export default function InsightsCard({ quizResults }: InsightsCardProps) {
                   className={`border ${colors.border} ${colors.bg} rounded-lg p-4 text-center`}
                 >
                   <div className="text-3xl mb-2">
-                    {subject.subjectId === 'mathematics' && '📐'}
-                    {subject.subjectId === 'addMath' && '🧮'}
-                    {subject.subjectId === 'physics' && '⚛️'}
-                    {subject.subjectId === 'chemistry' && '🧪'}
-                    {subject.subjectId === 'biology' && '🧬'}
-                    {subject.subjectId === 'islam' && '☪️'}
-                    {subject.subjectId === 'sejarah' && '📜'}
+                    {getSubjectIcon(subject.subjectId)}
                   </div>
                   <h4 className={`font-semibold ${colors.text}`}>{subject.subjectBM}</h4>
                   <div className="text-2xl font-bold text-green-600 mt-2">{subject.averageScore}%</div>

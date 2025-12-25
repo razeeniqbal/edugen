@@ -12,69 +12,8 @@ import InsightsCard from '@/components/InsightsCard'
 import { calculateStudyStats } from '@/components/StudyStatsCard'
 import { getAllSubjects, getSubjectTopicsByForm, type Subject } from '@/lib/subjects-config'
 import { getPlayerData, type PlayerData } from '@/lib/gamification'
-
-// Helper function to get subject color classes
-function getSubjectClasses(color: string, variant: 'bg' | 'border' | 'text' | 'bg-light') {
-  const colorMap: Record<string, Record<string, string>> = {
-    mathematics: {
-      bg: 'bg-mathematics-500',
-      'bg-light': 'bg-mathematics-50',
-      border: 'border-mathematics-500',
-      text: 'text-mathematics-600',
-    },
-    addMath: {
-      bg: 'bg-mathematics-500',
-      'bg-light': 'bg-mathematics-50',
-      border: 'border-mathematics-500',
-      text: 'text-mathematics-600',
-    },
-    physics: {
-      bg: 'bg-physics-500',
-      'bg-light': 'bg-physics-50',
-      border: 'border-physics-500',
-      text: 'text-physics-600',
-    },
-    chemistry: {
-      bg: 'bg-chemistry-500',
-      'bg-light': 'bg-chemistry-50',
-      border: 'border-chemistry-500',
-      text: 'text-chemistry-600',
-    },
-    biology: {
-      bg: 'bg-biology-500',
-      'bg-light': 'bg-biology-50',
-      border: 'border-biology-500',
-      text: 'text-biology-600',
-    },
-    sejarah: {
-      bg: 'bg-sejarah-500',
-      'bg-light': 'bg-sejarah-50',
-      border: 'border-sejarah-500',
-      text: 'text-sejarah-600',
-    },
-    islam: {
-      bg: 'bg-islam-500',
-      'bg-light': 'bg-islam-50',
-      border: 'border-islam-500',
-      text: 'text-islam-600',
-    },
-  }
-  return colorMap[color]?.[variant] || 'bg-primary-500'
-}
-
-// Helper function to get subject border color hex values
-function getSubjectBorderColor(color: string): string {
-  const colorMap: Record<string, string> = {
-    mathematics: '#f59e0b',
-    addMath: '#f59e0b',
-    physics: '#3b82f6',
-    chemistry: '#22c55e',
-    biology: '#14b8a6',
-    sejarah: '#ef4444',
-    islam: '#a855f7',
-  }
-  return colorMap[color] || '#0ea5e9'
-}
+import { QuizResult } from '@/lib/types'
+import { getSubjectColorClass, getSubjectBorderColorHex } from '@/lib/subject-utils'
 
 function HomeContent() {
   const router = useRouter()
@@ -87,7 +26,7 @@ function HomeContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'quiz' | 'dashboard' | 'insights'>('dashboard')
-  const [quizResults, setQuizResults] = useState<any[]>([])
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([])
   const [playerData, setPlayerData] = useState<PlayerData | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -171,9 +110,9 @@ function HomeContent() {
       }))
 
       router.push('/quiz')
-    } catch (err: any) {
-      console.error('Error generating questions:', err)
-      setError(err.response?.data?.error || 'Failed to generate questions. Please try again.')
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || 'Failed to generate questions. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -245,7 +184,7 @@ function HomeContent() {
                         onClick={() => handleSubjectSelect(subject)}
                         className="p-6 bg-white rounded-2xl border-2 text-left hover-lift shadow-md"
                         style={{
-                          borderColor: getSubjectBorderColor(subject.color),
+                          borderColor: getSubjectBorderColorHex(subject.color),
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -286,7 +225,7 @@ function HomeContent() {
                           onClick={() => { setSelectedForm(4); setSelectedChapters([]) }}
                           className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
                             selectedForm === 4
-                              ? `${getSubjectClasses(selectedSubject.color, 'bg')} text-white shadow-md`
+                              ? `${getSubjectColorClass(selectedSubject.color, 'bg')} text-white shadow-md`
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -296,7 +235,7 @@ function HomeContent() {
                           onClick={() => { setSelectedForm(5); setSelectedChapters([]) }}
                           className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
                             selectedForm === 5
-                              ? `${getSubjectClasses(selectedSubject.color, 'bg')} text-white shadow-md`
+                              ? `${getSubjectColorClass(selectedSubject.color, 'bg')} text-white shadow-md`
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -335,7 +274,7 @@ function HomeContent() {
                             onClick={() => handleChapterToggle(topic.chapter)}
                             className={`p-4 rounded-xl border-2 text-left transition-all ${
                               selectedChapters.includes(topic.chapter)
-                                ? `${getSubjectClasses(selectedSubject.color, 'border')} ${getSubjectClasses(selectedSubject.color, 'bg-light')}`
+                                ? `${getSubjectColorClass(selectedSubject.color, 'border')} ${getSubjectColorClass(selectedSubject.color, 'bg-light')}`
                                 : 'border-slate-200 bg-white hover:border-slate-300'
                             }`}
                           >
@@ -349,7 +288,7 @@ function HomeContent() {
                               </div>
                               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                                 selectedChapters.includes(topic.chapter)
-                                  ? `${getSubjectClasses(selectedSubject.color, 'border')} ${getSubjectClasses(selectedSubject.color, 'bg')}`
+                                  ? `${getSubjectColorClass(selectedSubject.color, 'border')} ${getSubjectColorClass(selectedSubject.color, 'bg')}`
                                   : 'border-slate-300'
                               }`}>
                                 {selectedChapters.includes(topic.chapter) && (
@@ -375,7 +314,7 @@ function HomeContent() {
                       disabled={selectedChapters.length === 0 || loading}
                       className={`w-full mt-6 py-4 rounded-xl font-bold text-lg transition-all ${
                         selectedChapters.length > 0 && !loading
-                          ? `${getSubjectClasses(selectedSubject.color, 'bg')} hover:opacity-90 text-white shadow-lg hover:shadow-xl`
+                          ? `${getSubjectColorClass(selectedSubject.color, 'bg')} hover:opacity-90 text-white shadow-lg hover:shadow-xl`
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       }`}
                     >

@@ -1,4 +1,5 @@
 // Gamification system for EduGen
+import { QuizResult } from './types'
 
 export interface PlayerData {
   level: number
@@ -24,7 +25,7 @@ export interface Achievement {
   description: string
   icon: string
   xpReward: number
-  condition: (playerData: PlayerData, quizResults: any[]) => boolean
+  condition: (playerData: PlayerData, quizResults: QuizResult[]) => boolean
 }
 
 // XP required for each level (exponential growth)
@@ -180,7 +181,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 // Check for newly unlocked achievements
 export function checkAchievements(
   playerData: PlayerData,
-  quizResults: any[]
+  quizResults: QuizResult[]
 ): { newAchievements: Achievement[], totalXPGained: number } {
   const newAchievements: Achievement[] = []
   let totalXPGained = 0
@@ -238,7 +239,7 @@ export function savePlayerData(data: PlayerData): void {
 export function updatePlayerDataAfterQuiz(
   score: number,
   total: number,
-  quizResults: any[]
+  quizResults: QuizResult[]
 ): { playerData: PlayerData, xpGained: number, leveledUp: boolean, newAchievements: Achievement[] } {
   const playerData = getPlayerData()
 
