@@ -223,9 +223,13 @@ function HomeContent() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => { setSelectedForm(4); setSelectedChapters([]) }}
-                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
+                          style={selectedForm === 4 ? {
+                            backgroundColor: getSubjectBorderColorHex(selectedSubject.color),
+                            color: 'white'
+                          } : {}}
+                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all shadow-md ${
                             selectedForm === 4
-                              ? `${getSubjectColorClass(selectedSubject.color, 'bg')} text-white shadow-md`
+                              ? ''
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -233,9 +237,13 @@ function HomeContent() {
                         </button>
                         <button
                           onClick={() => { setSelectedForm(5); setSelectedChapters([]) }}
-                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
+                          style={selectedForm === 5 ? {
+                            backgroundColor: getSubjectBorderColorHex(selectedSubject.color),
+                            color: 'white'
+                          } : {}}
+                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all shadow-md ${
                             selectedForm === 5
-                              ? `${getSubjectColorClass(selectedSubject.color, 'bg')} text-white shadow-md`
+                              ? ''
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -321,9 +329,13 @@ function HomeContent() {
                     <button
                       onClick={handleGenerateQuestions}
                       disabled={selectedChapters.length === 0 || loading}
+                      style={selectedChapters.length > 0 && !loading ? {
+                        backgroundColor: getSubjectBorderColorHex(selectedSubject.color),
+                        color: 'white'
+                      } : {}}
                       className={`w-full mt-6 py-4 rounded-xl font-bold text-lg transition-all ${
                         selectedChapters.length > 0 && !loading
-                          ? `${getSubjectColorClass(selectedSubject.color, 'bg')} hover:opacity-90 text-white shadow-lg hover:shadow-xl`
+                          ? 'hover:opacity-90 shadow-lg hover:shadow-xl'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       }`}
                     >
