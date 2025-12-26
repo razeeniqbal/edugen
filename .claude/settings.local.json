@@ -6,7 +6,10 @@
       "Bash(git push:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix chapter selection color highlighting\n\n- Replace dynamic Tailwind classes with inline styles\n- Use subject color hex values for selected state\n- Add semi-transparent background for selected chapters\n- Checkbox now shows proper color when selected\n\nFixes issue where selected chapters didn''t show visual feedback\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(npm run dev:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Form buttons and Generate button styling\n\n- Replace dynamic Tailwind classes with inline styles for Form 4/5 buttons\n- Replace dynamic Tailwind classes with inline styles for Generate button\n- Use subject color hex values for proper color rendering\n- Fixes issue where buttons didn''t show colors\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Form buttons and Generate button styling\n\n- Replace dynamic Tailwind classes with inline styles for Form 4/5 buttons\n- Replace dynamic Tailwind classes with inline styles for Generate button\n- Use subject color hex values for proper color rendering\n- Fixes issue where buttons didn''t show colors\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(test:*)"
     ]
   }
 }

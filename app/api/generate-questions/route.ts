@@ -348,21 +348,44 @@ Make sure the questions are diverse, covering different aspects and difficulty l
       }
     }
 
-    // Strategy 3: Extract JSON between code blocks
-    const codeBlockMatch = responseText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/)
+    // Strategy 3: Extract JSON between code blocks (with more flexible matching)
+    const codeBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
       try {
-        questions = JSON.parse(codeBlockMatch[1])
+        const cleanedJson = codeBlockMatch[1].trim()
+        console.error('Extracted JSON length:', cleanedJson.length)
+        console.error('Extracted JSON first 200 chars:', cleanedJson.substring(0, 200))
+        console.error('Extracted JSON last 200 chars:', cleanedJson.substring(cleanedJson.length - 200))
+        questions = JSON.parse(cleanedJson)
         if (Array.isArray(questions)) {
           return questions
         }
       } catch (e) {
-        // Code block parse failed
+        console.error('JSON parse error in code block strategy:', e)
+
+        // Strategy 4: Extract just the JSON array from code block (ignoring explanatory text)
+        try {
+          const arrayMatch = cleanedJson.match(/\[\s*\{[\s\S]*?\}\s*\]/)
+          if (arrayMatch) {
+            console.error('Strategy 4: Trying to extract pure JSON array')
+            questions = JSON.parse(arrayMatch[0])
+            if (Array.isArray(questions)) {
+              return questions
+            }
+          }
+        } catch (e2) {
+          console.error('Strategy 4 also failed:', e2)
+        }
       }
     }
 
-    throw new Error('Failed to parse questions from AI response')
+    console.error('Failed to parse AI response.')
+    console.error('Response length:', responseText.length)
+    console.error('First 500 chars:', responseText.substring(0, 500))
+    console.error('Last 500 chars:', responseText.substring(responseText.length - 500))
+    throw new Error('Failed to parse questions from AI response. Response length: ' + responseText.length)
   } catch (error) {
+    console.error('Error in generateQuestions:', error)
     throw error
   }
 }
