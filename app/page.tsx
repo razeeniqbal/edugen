@@ -344,7 +344,49 @@ function HomeContent() {
                   </button>
                 </div>
               ) : (
-                <InsightsCard quizResults={quizResults} />
+                <div className="space-y-6">
+                  <InsightsCard quizResults={quizResults} />
+
+                  {/* Recent Quizzes with Review */}
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                    <h3 className="text-xl font-heading font-bold text-gray-900 mb-4">Recent Quizzes</h3>
+                    <div className="space-y-3">
+                      {quizResults.slice(0, 10).map((result, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900">
+                              {result.subject || 'Quiz'} - Form {result.form || '4'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {new Date(result.timestamp).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <div className={`text-2xl font-bold ${result.score >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                                {result.score}%
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {result.correctAnswers}/{result.totalQuestions}
+                              </div>
+                            </div>
+                            {result.questions && result.userAnswers && (
+                              <button
+                                onClick={() => {
+                                  sessionStorage.setItem('review-quiz', JSON.stringify(result))
+                                  router.push('/review')
+                                }}
+                                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
+                              >
+                                Review
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               )}
             </motion.div>
           )}
