@@ -268,36 +268,45 @@ function HomeContent() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {formTopics.map((topic) => (
-                          <button
-                            key={topic.chapter}
-                            onClick={() => handleChapterToggle(topic.chapter)}
-                            className={`p-4 rounded-xl border-2 text-left transition-all ${
-                              selectedChapters.includes(topic.chapter)
-                                ? `${getSubjectColorClass(selectedSubject.color, 'border')} ${getSubjectColorClass(selectedSubject.color, 'bg-light')}`
-                                : 'border-slate-200 bg-white hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-slate-900 mb-1">{topic.title}</h4>
-                                <p className="text-sm text-slate-500">
-                                  {topic.keyTopics.slice(0, 2).join(', ')}
-                                  {topic.keyTopics.length > 2 && '...'}
-                                </p>
+                        {formTopics.map((topic) => {
+                          const isSelected = selectedChapters.includes(topic.chapter)
+                          return (
+                            <button
+                              key={topic.chapter}
+                              onClick={() => handleChapterToggle(topic.chapter)}
+                              style={isSelected ? {
+                                borderColor: getSubjectBorderColorHex(selectedSubject.color),
+                                backgroundColor: isSelected ? `${getSubjectBorderColorHex(selectedSubject.color)}10` : 'white'
+                              } : {}}
+                              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                                isSelected ? '' : 'border-slate-200 bg-white hover:border-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-slate-900 mb-1">{topic.title}</h4>
+                                  <p className="text-sm text-slate-500">
+                                    {topic.keyTopics.slice(0, 2).join(', ')}
+                                    {topic.keyTopics.length > 2 && '...'}
+                                  </p>
+                                </div>
+                                <div
+                                  style={isSelected ? {
+                                    borderColor: getSubjectBorderColorHex(selectedSubject.color),
+                                    backgroundColor: getSubjectBorderColorHex(selectedSubject.color)
+                                  } : {}}
+                                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                    isSelected ? '' : 'border-slate-300'
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <span className="text-white text-sm">✓</span>
+                                  )}
+                                </div>
                               </div>
-                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                selectedChapters.includes(topic.chapter)
-                                  ? `${getSubjectColorClass(selectedSubject.color, 'border')} ${getSubjectColorClass(selectedSubject.color, 'bg')}`
-                                  : 'border-slate-300'
-                              }`}>
-                                {selectedChapters.includes(topic.chapter) && (
-                                  <span className="text-white text-sm">✓</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
 
