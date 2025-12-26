@@ -122,17 +122,17 @@ function HomeContent() {
       <Sidebar activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as any)} />
 
       {/* Main Content */}
-      <div className="flex-1 ml-[280px] flex flex-col">
+      <div className="flex-1 lg:ml-[280px] flex flex-col">
         {/* Top Navigation Bar */}
-        <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-          <div className="px-6 py-4">
+        <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+          <div className="px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-heading font-bold text-gray-900">
+              <div className="lg:ml-0 ml-14">
+                <h1 className="text-xl sm:text-2xl font-heading font-bold text-gray-900">
                   {activeTab === 'quiz' && '📝 Start Quiz'}
                   {activeTab === 'insights' && '💡 Insights'}
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
                   {activeTab === 'quiz' && 'Choose a subject and begin your quiz'}
                   {activeTab === 'insights' && 'Identify areas for improvement and track your progress'}
                 </p>
@@ -184,13 +184,13 @@ function HomeContent() {
                     <span>←</span> Back to Subjects
                   </button>
 
-                  <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-200">
-                    <div className="flex items-start gap-4 mb-6">
-                      <div className="text-6xl">{selectedSubject.icon}</div>
-                      <div>
-                        <h2 className="text-3xl font-heading font-bold text-gray-900 mb-2">{selectedSubject.nameBM}</h2>
-                        <p className="text-lg text-gray-600">{selectedSubject.name}</p>
-                        <p className="text-gray-500 mt-2">{selectedSubject.description}</p>
+                  <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 mb-6 border border-gray-200">
+                    <div className="flex items-start gap-3 sm:gap-4 mb-6">
+                      <div className="text-4xl sm:text-6xl">{selectedSubject.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-xl sm:text-3xl font-heading font-bold text-gray-900 mb-2 break-words">{selectedSubject.nameBM}</h2>
+                        <p className="text-sm sm:text-lg text-gray-600">{selectedSubject.name}</p>
+                        <p className="text-xs sm:text-base text-gray-500 mt-2">{selectedSubject.description}</p>
                       </div>
                     </div>
 
@@ -204,7 +204,7 @@ function HomeContent() {
                             backgroundColor: getSubjectBorderColorHex(selectedSubject.color),
                             color: 'white'
                           } : {}}
-                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all shadow-md ${
+                          className={`flex-1 py-2 sm:py-3 px-4 sm:px-6 rounded-xl text-sm sm:text-base font-medium transition-all shadow-md ${
                             selectedForm === 4
                               ? ''
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -218,7 +218,7 @@ function HomeContent() {
                             backgroundColor: getSubjectBorderColorHex(selectedSubject.color),
                             color: 'white'
                           } : {}}
-                          className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all shadow-md ${
+                          className={`flex-1 py-2 sm:py-3 px-4 sm:px-6 rounded-xl text-sm sm:text-base font-medium transition-all shadow-md ${
                             selectedForm === 5
                               ? ''
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -231,21 +231,21 @@ function HomeContent() {
 
                     {/* Chapter Selection */}
                     <div>
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
                         <label className="block text-sm font-semibold text-slate-700">
                           Select Chapters ({selectedChapters.length} selected)
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 text-xs sm:text-sm">
                           <button
                             onClick={handleSelectAllChapters}
-                            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                            className="text-primary-600 hover:text-primary-700 font-medium"
                           >
                             Select All
                           </button>
                           <span className="text-slate-300">|</span>
                           <button
                             onClick={handleDeselectAllChapters}
-                            className="text-sm text-slate-600 hover:text-slate-700 font-medium"
+                            className="text-slate-600 hover:text-slate-700 font-medium"
                           >
                             Deselect All
                           </button>
@@ -352,21 +352,21 @@ function HomeContent() {
                     <h3 className="text-xl font-heading font-bold text-gray-900 mb-4">Recent Quizzes</h3>
                     <div className="space-y-3">
                       {quizResults.slice(0, 10).map((result, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-900">
+                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 text-sm sm:text-base">
                               {result.subject || 'Quiz'} - Form {result.form || '4'}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-xs sm:text-sm text-gray-500">
                               {new Date(result.timestamp).toLocaleDateString()}
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                             <div className="text-right">
-                              <div className={`text-2xl font-bold ${result.score >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                              <div className={`text-xl sm:text-2xl font-bold ${result.score >= 50 ? 'text-green-600' : 'text-red-600'}`}>
                                 {result.score}%
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-xs sm:text-sm text-gray-500">
                                 {result.correctAnswers}/{result.totalQuestions}
                               </div>
                             </div>
@@ -376,7 +376,7 @@ function HomeContent() {
                                   sessionStorage.setItem('review-quiz', JSON.stringify(result))
                                   router.push('/review')
                                 }}
-                                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
+                                className="px-3 sm:px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md whitespace-nowrap"
                               >
                                 Review
                               </button>

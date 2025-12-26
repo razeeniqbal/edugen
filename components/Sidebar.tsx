@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
@@ -11,6 +11,18 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isLargeScreen, setIsLargeScreen] = useState(true)
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024)
+    }
+
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   const menuItems = [
     { id: 'quiz', icon: '📝', label: 'Start Quiz', description: 'Begin a new quiz' },
@@ -18,12 +30,39 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   ]
 
   return (
-    <motion.aside
-      initial={{ x: -300 }}
-      animate={{ x: 0, width: isCollapsed ? '80px' : '280px' }}
-      transition={{ duration: 0.3 }}
-      className="fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg z-50 flex flex-col"
-    >
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-lg shadow-lg border border-gray-200"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isMobileOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{
+          x: isMobileOpen || isLargeScreen ? 0 : -300,
+          width: isCollapsed ? '80px' : '280px'
+        }}
+        transition={{ duration: 0.3 }}
+        className="fixed left-0 top-0 h-screen bg-white border-r border-gray-200 shadow-lg z-50 flex flex-col"
+      >
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -49,7 +88,10 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onTabChange(item.id)}
+            onClick={() => {
+              onTabChange(item.id)
+              setIsMobileOpen(false)
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
               activeTab === item.id
                 ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg'
@@ -86,5 +128,6 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
       </div>
     </motion.aside>
+    </>
   )
 }
