@@ -9,7 +9,8 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Form buttons and Generate button styling\n\n- Replace dynamic Tailwind classes with inline styles for Form 4/5 buttons\n- Replace dynamic Tailwind classes with inline styles for Generate button\n- Use subject color hex values for proper color rendering\n- Fixes issue where buttons didn''t show colors\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
       "Bash(cat:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--personalproject-edugen\\\\tasks\\\\b6b21f7.output\" -Tail 50)"
     ]
   }
 }

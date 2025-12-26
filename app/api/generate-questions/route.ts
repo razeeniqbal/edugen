@@ -313,6 +313,87 @@ Return the questions in this exact JSON format:
 Make sure the questions are diverse, covering different aspects and difficulty levels of the material.
 `}`
 
+  // Helper function to safely parse JSON with better error handling
+  const safeJsonParse = (text: string): Question[] | null => {
+    try {
+      const parsed = JSON.parse(text)
+      if (Array.isArray(parsed)) {
+        return parsed
+      }
+    } catch (e) {
+      // If parsing fails, log the error and try to fix common JSON issues
+      console.error('Initial JSON parse error:', e instanceof Error ? e.message : String(e))
+
+      // Remove any BOM or invisible characters at the start
+      let cleaned = text.replace(/^\uFEFF/, '')
+
+      // Fix control characters by walking through the string
+      // and only escaping them when inside string values
+      let result = ''
+      let inString = false
+      let escapeNext = false
+
+      try {
+        for (let i = 0; i < cleaned.length; i++) {
+          const char = cleaned[i]
+          const code = char.charCodeAt(0)
+
+          // Track if we're inside a string
+          if (char === '"' && !escapeNext) {
+            inString = !inString
+            result += char
+            escapeNext = false
+            continue
+          }
+
+          // Track escape sequences
+          if (char === '\\' && !escapeNext) {
+            escapeNext = true
+            result += char
+            continue
+          }
+
+          // If we're inside a string and find a control character, escape it
+          if (inString && code >= 0x00 && code <= 0x1F && !escapeNext) {
+            switch (code) {
+              case 0x08: result += '\\b'; break  // backspace
+              case 0x09: result += '\\t'; break  // tab
+              case 0x0A: result += '\\n'; break  // newline
+              case 0x0C: result += '\\f'; break  // form feed
+              case 0x0D: result += '\\r'; break  // carriage return
+              default: result += '\\u' + ('0000' + code.toString(16)).slice(-4); break
+            }
+          } else {
+            result += char
+          }
+
+          escapeNext = false
+        }
+
+        const parsed = JSON.parse(result)
+        if (Array.isArray(parsed)) {
+          console.error('SUCCESS after cleaning JSON')
+          return parsed
+        }
+      } catch (e2) {
+        console.error('Cleaned JSON parse error:', e2 instanceof Error ? e2.message : String(e2))
+        // Show context around the error position
+        if (e2 instanceof SyntaxError) {
+          const match = e2.message.match(/position (\d+)/)
+          if (match) {
+            const pos = parseInt(match[1])
+            const start = Math.max(0, pos - 100)
+            const end = Math.min(result.length, pos + 100)
+            console.error('Error context:', result.substring(start, end))
+            console.error('Error position marked:', ' '.repeat(pos - start) + '^')
+          }
+        }
+        return null
+      }
+    }
+    return null
+  }
+
   try {
     // Get the generative model - using gemini-2.5-flash for higher free tier limits
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
@@ -325,64 +406,102 @@ Make sure the questions are diverse, covering different aspects and difficulty l
     // Try multiple parsing strategies
     let questions: Question[] = []
 
-    // Strategy 1: Direct JSON parse
-    try {
-      questions = JSON.parse(responseText)
-      if (Array.isArray(questions)) {
-        return questions
-      }
-    } catch (e) {
-      // Direct parse failed, continue to pattern matching
+    // Strategy 1: Direct JSON parse with safe parsing
+    const directParse = safeJsonParse(responseText)
+    if (directParse) {
+      console.error(`Strategy 1 SUCCESS: Parsed ${directParse.length} questions`)
+      return directParse
     }
 
-    // Strategy 2: Extract JSON array from text
+    // Strategy 2: Extract JSON array from text (greedy match to get all questions)
     const jsonMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/)
     if (jsonMatch) {
-      try {
-        questions = JSON.parse(jsonMatch[0])
-        if (Array.isArray(questions)) {
-          return questions
-        }
-      } catch (e) {
-        // Pattern match failed, continue to code block
+      const arrayParse = safeJsonParse(jsonMatch[0])
+      if (arrayParse) {
+        console.error(`Strategy 2 SUCCESS: Parsed ${arrayParse.length} questions`)
+        return arrayParse
       }
+      console.error('Strategy 2 failed: Could not parse extracted array')
     }
 
     // Strategy 3: Extract JSON between code blocks (with more flexible matching)
     const codeBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
-      try {
-        const cleanedJson = codeBlockMatch[1].trim()
-        console.error('Extracted JSON length:', cleanedJson.length)
-        console.error('Extracted JSON first 200 chars:', cleanedJson.substring(0, 200))
-        console.error('Extracted JSON last 200 chars:', cleanedJson.substring(cleanedJson.length - 200))
-        questions = JSON.parse(cleanedJson)
-        if (Array.isArray(questions)) {
-          return questions
-        }
-      } catch (e) {
-        console.error('JSON parse error in code block strategy:', e)
+      const cleanedJson = codeBlockMatch[1].trim()
+      console.error('Extracted JSON length:', cleanedJson.length)
+      console.error('Extracted JSON first 200 chars:', cleanedJson.substring(0, 200))
+      console.error('Extracted JSON last 200 chars:', cleanedJson.substring(cleanedJson.length - 200))
 
-        // Strategy 4: Extract just the JSON array from code block (ignoring explanatory text)
-        try {
-          const arrayMatch = cleanedJson.match(/\[\s*\{[\s\S]*?\}\s*\]/)
-          if (arrayMatch) {
-            console.error('Strategy 4: Trying to extract pure JSON array')
-            questions = JSON.parse(arrayMatch[0])
-            if (Array.isArray(questions)) {
-              return questions
-            }
-          }
-        } catch (e2) {
-          console.error('Strategy 4 also failed:', e2)
+      // Strategy 4: Find the last valid JSON array by searching backwards
+      // Gemini sometimes adds commentary in the middle, so we look for the last ]
+      const lastBracket = cleanedJson.lastIndexOf(']')
+      const firstBracket = cleanedJson.indexOf('[')
+
+      if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+        console.error('Strategy 4: Trying to extract from first [ to last ]')
+        const jsonArray = cleanedJson.substring(firstBracket, lastBracket + 1)
+        console.error('Extracted array length:', jsonArray.length)
+        console.error('Array starts with:', jsonArray.substring(0, 100))
+        console.error('Array ends with:', jsonArray.substring(jsonArray.length - 100))
+
+        const arrayParse = safeJsonParse(jsonArray)
+        if (arrayParse) {
+          console.error(`Strategy 4 SUCCESS: Parsed ${arrayParse.length} questions`)
+          return arrayParse
         }
+        console.error('Strategy 4 failed: Could not parse extracted array')
       }
+
+      // Try parsing the whole cleaned JSON as fallback
+      const fullParse = safeJsonParse(cleanedJson)
+      if (fullParse) {
+        console.error(`Strategy 3 SUCCESS: Parsed ${fullParse.length} questions`)
+        return fullParse
+      }
+      console.error('Strategy 3 failed: Could not parse code block content')
     }
 
-    console.error('Failed to parse AI response.')
+    // Strategy 5 (Last resort): Extract individual question objects and rebuild array
+    // Gemini sometimes adds commentary between questions, breaking the JSON
+    console.error('Strategy 5: Attempting to extract individual question objects')
+    const questionPattern = /\{\s*"number"\s*:\s*\d+[\s\S]*?"difficulty"\s*:\s*"(?:Easy|Medium|Hard)"\s*\}/g
+    const matches = responseText.match(questionPattern)
+
+    if (matches && matches.length > 0) {
+      console.error(`Strategy 5: Found ${matches.length} potential question objects`)
+      const validQuestions: Question[] = []
+
+      for (const match of matches) {
+        const parsed = safeJsonParse(match)
+        if (parsed && Array.isArray(parsed) && parsed.length === 1) {
+          validQuestions.push(parsed[0])
+        } else {
+          // Try wrapping in array
+          const arrayParsed = safeJsonParse(`[${match}]`)
+          if (arrayParsed && Array.isArray(arrayParsed) && arrayParsed.length === 1) {
+            validQuestions.push(arrayParsed[0])
+          }
+        }
+      }
+
+      if (validQuestions.length > 0) {
+        console.error(`Strategy 5 SUCCESS: Extracted ${validQuestions.length} valid questions`)
+        return validQuestions
+      }
+      console.error('Strategy 5 failed: Could not parse individual question objects')
+    }
+
+    console.error('==== ALL STRATEGIES FAILED ====')
     console.error('Response length:', responseText.length)
-    console.error('First 500 chars:', responseText.substring(0, 500))
-    console.error('Last 500 chars:', responseText.substring(responseText.length - 500))
+    console.error('First 1000 chars:', responseText.substring(0, 1000))
+    console.error('Last 1000 chars:', responseText.substring(responseText.length - 1000))
+
+    // Final debug: show what patterns we're looking for
+    console.error('Looking for code blocks:', responseText.includes('```'))
+    console.error('Looking for JSON array:', responseText.includes('[{'))
+    console.error('Response starts with:', responseText.substring(0, 50))
+    console.error('Response ends with:', responseText.substring(responseText.length - 50))
+
     throw new Error('Failed to parse questions from AI response. Response length: ' + responseText.length)
   } catch (error) {
     console.error('Error in generateQuestions:', error)

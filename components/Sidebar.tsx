@@ -66,20 +66,35 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-2xl font-heading font-bold bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent">
-                EduGen
-              </h1>
-              <p className="text-xs text-gray-500 mt-1">SPM Quiz Platform</p>
+          {!isCollapsed ? (
+            <div className="flex items-center gap-3">
+              <img src="/logo.ico" alt="EduGen Logo" className="w-8 h-8" />
+              <div>
+                <h1 className="text-2xl font-heading font-bold bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent">
+                  EduGen
+                </h1>
+                <p className="text-xs text-gray-500 mt-1">SPM Quiz Platform</p>
+              </div>
             </div>
+          ) : (
+            <img src="/logo.ico" alt="EduGen Logo" className="w-8 h-8 mx-auto" />
           )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-          >
-            {isCollapsed ? '→' : '←'}
-          </button>
+          {!isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
+            >
+              ←
+            </button>
+          )}
+          {isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 w-full flex justify-center"
+            >
+              →
+            </button>
+          )}
         </div>
       </div>
 

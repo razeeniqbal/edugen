@@ -223,27 +223,27 @@ export default function QuizMode({ questions, chapter, onComplete, onBack }: Qui
               ref={(el) => { questionRefs.current[index] = el }}
               className="bg-white rounded-xl border-2 border-slate-200 p-6 scroll-mt-6"
             >
-              <div className="flex items-start gap-3 mb-4">
-                <div className={`px-3 py-1 rounded-lg text-sm font-medium min-w-[3rem] text-center ${
-                  !isSubmitted ? 'bg-slate-100 text-slate-700' :
-                  isCorrect ? 'bg-green-100 text-green-700' :
-                  isWrong ? 'bg-red-100 text-red-700' :
-                  'bg-slate-100 text-slate-700'
-                }`}>
-                  Q{index + 1}
-                </div>
-                {q.difficulty && (
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    q.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                    q.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`px-3 py-1 rounded-lg text-sm font-medium min-w-[3rem] text-center ${
+                    !isSubmitted ? 'bg-slate-100 text-slate-700' :
+                    isCorrect ? 'bg-green-100 text-green-700' :
+                    isWrong ? 'bg-red-100 text-red-700' :
+                    'bg-slate-100 text-slate-700'
                   }`}>
-                    {q.difficulty}
-                  </span>
-                )}
-                <div className="flex-1">
-                  <p className="text-slate-900 font-medium leading-relaxed">{q.question}</p>
+                    Q{index + 1}
+                  </div>
+                  {q.difficulty && (
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      q.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
+                      q.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {q.difficulty}
+                    </span>
+                  )}
                 </div>
+                <p className="text-slate-900 font-medium leading-relaxed">{q.question}</p>
               </div>
 
               <div className="space-y-2">
