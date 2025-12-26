@@ -7,11 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import LoadingModal from '@/components/LoadingModal'
 import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
-import PlayerStatsCard from '@/components/PlayerStatsCard'
 import InsightsCard from '@/components/InsightsCard'
 import { calculateStudyStats } from '@/components/StudyStatsCard'
 import { getAllSubjects, getSubjectTopicsByForm, type Subject } from '@/lib/subjects-config'
-import { getPlayerData, type PlayerData } from '@/lib/gamification'
 import { QuizResult } from '@/lib/types'
 import { getSubjectColorClass, getSubjectBorderColorHex } from '@/lib/subject-utils'
 
@@ -25,9 +23,8 @@ function HomeContent() {
   const [selectedChapters, setSelectedChapters] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'quiz' | 'dashboard' | 'insights'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'quiz' | 'insights'>('quiz')
   const [quizResults, setQuizResults] = useState<QuizResult[]>([])
-  const [playerData, setPlayerData] = useState<PlayerData | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -37,12 +34,9 @@ function HomeContent() {
       setQuizResults(JSON.parse(saved))
     }
     const tab = searchParams.get('tab')
-    if (tab === 'dashboard' || tab === 'quiz' || tab === 'insights') {
+    if (tab === 'quiz' || tab === 'insights') {
       setActiveTab(tab as any)
     }
-
-    // Load player data on client side only
-    setPlayerData(getPlayerData())
   }, [searchParams])
 
   const stats = quizResults.length > 0 ? calculateStudyStats(quizResults) : null
@@ -135,30 +129,13 @@ function HomeContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-heading font-bold text-gray-900">
-                  {activeTab === 'dashboard' && '📊 Dashboard'}
                   {activeTab === 'quiz' && '📝 Start Quiz'}
                   {activeTab === 'insights' && '💡 Insights'}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  {activeTab === 'dashboard' && 'Track your progress and performance'}
                   {activeTab === 'quiz' && 'Choose a subject and begin your quiz'}
                   {activeTab === 'insights' && 'Identify areas for improvement and track your progress'}
                 </p>
-              </div>
-
-              {/* User Info */}
-              <div className="flex items-center gap-4">
-                {playerData && (
-                  <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
-                    <div className="text-sm">
-                      <div className="font-semibold text-gray-900">Level {playerData.level}</div>
-                      <div className="text-xs text-gray-500">{playerData.totalXP} XP</div>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
-                      👤
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -344,101 +321,6 @@ function HomeContent() {
                   </div>
                 </div>
               )}
-            </motion.div>
-          ) : activeTab === 'dashboard' ? (
-            /* Dashboard */
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              {/* Left Column - Player Stats */}
-              <div className="lg:col-span-1">
-                {playerData && <PlayerStatsCard playerData={playerData} />}
-              </div>
-
-              {/* Right Column - Quiz Stats and History */}
-              <div className="lg:col-span-2 space-y-6">
-                {quizResults.length === 0 ? (
-                  <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
-                    <div className="text-6xl mb-4">📊</div>
-                    <h3 className="text-2xl font-heading font-bold text-gray-900 mb-2">No Quiz Data Yet</h3>
-                    <p className="text-gray-600 mb-6">Start taking quizzes to see your progress!</p>
-                    <button
-                      onClick={() => setActiveTab('quiz')}
-                      className="px-8 py-3 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold rounded-lg shadow-lg hover-lift transition-all"
-                    >
-                      Start Your First Quiz
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Stats Overview */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 hover-lift">
-                        <div className="text-3xl mb-2">📝</div>
-                        <div className="text-3xl font-bold text-gray-900">{stats?.totalQuizzes || 0}</div>
-                        <div className="text-sm text-gray-600 mt-1">Quizzes Completed</div>
-                      </div>
-                      <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 hover-lift">
-                        <div className="text-3xl mb-2">✅</div>
-                        <div className="text-3xl font-bold text-gray-900">{stats?.totalQuestions || 0}</div>
-                        <div className="text-sm text-gray-600 mt-1">Questions Answered</div>
-                      </div>
-                      <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 hover-lift">
-                        <div className="text-3xl mb-2">🎯</div>
-                        <div className="text-3xl font-bold text-green-600">{stats?.averageScore.toFixed(1) || 0}%</div>
-                        <div className="text-sm text-gray-600 mt-1">Average Score</div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Recent Quizzes */}
-                {quizResults.length > 0 && (
-                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                    <h3 className="text-xl font-heading font-bold text-gray-900 mb-4">Recent Quizzes</h3>
-                    <div className="space-y-3">
-                      {quizResults.slice(0, 10).map((result, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-900">
-                              {result.subject || 'Quiz'} - Form {result.form || '4'}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {new Date(result.timestamp).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <div className={`text-2xl font-bold ${result.score >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                                {result.score}%
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {result.correctAnswers}/{result.totalQuestions}
-                              </div>
-                            </div>
-                            {result.questions && result.userAnswers && (
-                              <button
-                                onClick={() => {
-                                  sessionStorage.setItem('review-quiz', JSON.stringify(result))
-                                  router.push('/review')
-                                }}
-                                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
-                              >
-                                Review
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
             </motion.div>
           ) : (
             /* Insights Page */

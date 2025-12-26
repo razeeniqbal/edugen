@@ -48,29 +48,11 @@ export default function QuizPage() {
     const updated = [result, ...quizResults]
     localStorage.setItem('edugen-quiz-results', JSON.stringify(updated))
 
-    // Update gamification data
-    if (typeof window !== 'undefined') {
-      const { updatePlayerDataAfterQuiz } = require('@/lib/gamification')
-      const { playerData, xpGained, leveledUp, newAchievements } = updatePlayerDataAfterQuiz(
-        correctAnswers,
-        totalQuestions,
-        updated
-      )
-
-      // Store rewards to show on dashboard
-      sessionStorage.setItem('quiz-rewards', JSON.stringify({
-        xpGained,
-        leveledUp,
-        newAchievements,
-        newLevel: playerData.level
-      }))
-    }
-
     sessionStorage.removeItem('quiz-questions')
     sessionStorage.removeItem('quiz-metadata')
 
     setTimeout(() => {
-      router.push('/?tab=dashboard')
+      router.push('/?tab=insights')
     }, 2000)
   }
 

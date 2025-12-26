@@ -13,7 +13,6 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const menuItems = [
-    { id: 'dashboard', icon: '📊', label: 'Dashboard', description: 'View your stats' },
     { id: 'quiz', icon: '📝', label: 'Start Quiz', description: 'Begin a new quiz' },
     { id: 'insights', icon: '💡', label: 'Insights', description: 'Improve your weak areas' },
   ]
@@ -81,7 +80,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           {!isCollapsed && (
             <div className="flex-1">
               <div className="font-semibold text-sm text-gray-900">Student</div>
-              <div className="text-xs text-gray-500">Level 1 • Novice</div>
+              <div className="text-xs text-gray-500">SPM Prep</div>
             </div>
           )}
         </div>
